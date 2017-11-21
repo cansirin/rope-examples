@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>imager-worker</title>
+    <style>
+      html { font-family: Helvetica, Arial, sans-serif; font-size: 100%; background: #333; }
+      #page-wrapper { width: 600px; background: #FFF; padding: 1em; margin: 1em auto; min-height: 300px; border-top: 5px solid #69c773; box-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+      h1 { margin-top: 0; }
+      img { max-width: 100%; }
+      #original, #result { margin-top: 2em; width: 100%; overflow-x: auto; }
+    </style>
+  </head>
+
+  <body>
+    <div id="page-wrapper">
+
+      <h1>Rope imager - grayscale</h1>
+
+      <h2>Original Image</h2>
+      <div id="original">Waiting for a request...</div>
+      <hr>
+      <h2>Grayscale result</h2>
+      <div id="result">Grayscale version will appear here.</div>
+
+    </div>
+    <script src="https://unpkg.com/@rope/node@0.0.2/dist/bundle.min.js"></script>
+    <script src="./lib/jimp.js"></script>
+    <script>
+      const original = document.getElementById('original')
+      const result = document.getElementById('result')
+      new Rope(
+        // rope name
+        'imager',
+        // rope api
+        {
+          grayscale(imageB64, done, { kite }) {
+
+            console.log(imageB64, kite)
+
+            original.innerHTML = `Request from ${kite.id}`
+            result.innerHTML = ''
+
+            const img = new Image()
+            img.src = imageB64
+            original.appendChild(img)
+
+            Jimp.read(imageB64)
+              .then(function(i) {
+                i.grayscale().getBase64(Jimp.AUTO, function(err, src) {
+                  if (err) {
+                    console.error(err)
+                    return done(err)
+                  }
+
+                  var img = document.createElement('img')
+                  img.setAttribute('src', src)
+                  result.appendChild(img)
+
+                  done(null, src)
+                })
+              })
+              .catch(function(err) {
+                console.error(err)
+                done(err)
+              })
+          },
+        },
+        // rope configuration
+        { url: 'https://secure2.rope.live' }
+      )
+    </script>
+  </body>
+
+</html>
+

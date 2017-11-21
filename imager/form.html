@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rope imager example - grayscale</title>
+    <style>
+      html { font-family: Helvetica, Arial, sans-serif; font-size: 100%; background: #333; }
+      #page-wrapper { width: 600px; background: #FFF; padding: 1em; margin: 1em auto; min-height: 300px; border-top: 5px solid #69c773; box-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+      h1 { margin-top: 0; }
+      img { max-width: 100%; }
+      #original { margin-top: 2em; width: 100%; overflow-x: auto; }
+    </style>
+  </head>
+  <body>
+
+    <div id="page-wrapper">
+
+      <h1>Image File Reader</h1>
+      <div>
+        Select an image file:
+        <input type="file" id="fileInput">
+      </div>
+      <div>
+        Select a method:
+        <button id='grayscale'>Grayscale</button>
+      </div>
+
+      <div id="original">Select an image and it will show up here</div>
+      <hr>
+      <h2>Result from remote</h2>
+      <div id="grayscale-result">Choose an image and then click 'Grayscale' button</div>
+    </div>
+
+    <script src="https://unpkg.com/@rope/node@0.0.2/dist/bundle.min.js"></script>
+    <script>
+      const imagerClient = new Rope(
+        'imager-client',
+        {},
+        { url: 'https://secure2.rope.live' }
+      )
+
+      window.onload = function() {
+        var fileInput = document.getElementById('fileInput')
+        var original = document.getElementById('original')
+        var grayscaleButton = document.getElementById('grayscale')
+        var grayscaleResult = document.getElementById('grayscale-result')
+
+        var image = null
+
+        grayscaleButton.addEventListener('click', function(e) {
+          if (!image) {
+            alert('choose an image first')
+            return
+          }
+
+          imagerClient
+            .tell('run', {
+              method: 'grayscale',
+              args: [image],
+            })
+            .then(res => {
+              var img = new Image()
+              img.src = res
+              grayscaleResult.appendChild(img)
+            })
+        })
+
+        fileInput.addEventListener('change', function(e) {
+          var file = fileInput.files[0]
+          var imageType = /image.*/
+
+          if (file.type.match(imageType)) {
+            var reader = new FileReader()
+
+            reader.onload = function(e) {
+              console.log(e.data)
+              original.innerHTML = ''
+
+              var img = new Image()
+              img.src = reader.result
+              image = reader.result
+
+              original.appendChild(img)
+            }
+
+            reader.readAsDataURL(file)
+          } else {
+            image = null
+            original.innerHTML = 'File not supported!'
+          }
+        })
+      }
+
+    </script>
+  </body>
+</html>
