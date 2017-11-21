@@ -52,12 +52,15 @@
             return
           }
 
+          grayscaleResult.innerHTML = 'Waiting for remote rope to send response...'
+
           imagerClient
             .tell('run', {
               method: 'grayscale',
               args: [image],
             })
             .then(res => {
+              grayscaleResult.innerHTML = 'Grayscale image:'
               var img = new Image()
               img.src = res
               grayscaleResult.appendChild(img)
